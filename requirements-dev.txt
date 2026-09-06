@@ -2,5 +2,5 @@ ansible-core==2.19.2
 ansible-lint==25.8.2
 yamllint==1.37.1
 molecule==25.7.0
-molecule-plugins[docker]==23.7.0
+molecule-plugins[docker]==26.7.15
 pytest==8.4.2
