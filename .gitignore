@@ -1,0 +1,25 @@
+# Segredos e inventários reais
+.env
+.env.*
+!.env.example
+inventories/production/
+group_vars/vault.yml
+**/vault.yml
+*.vault
+*.key
+*.pem
+*.age
+.secrets/
+
+# Ansible/Python
+*.retry
+.ansible/
+.venv/
+__pycache__/
+.pytest_cache/
+.molecule/
+
+# Editores e sistema
+.DS_Store
+.idea/
+.vscode/
