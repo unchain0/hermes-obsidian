@@ -32,8 +32,20 @@ jobs:
       - name: Instalar collections
         run: ansible-galaxy collection install -r collections/requirements.yml
 
+      - name: Instalar Gitleaks fixado e verificar checksum
+        run: ./scripts/install-gitleaks.sh
+
       - name: Validar Ansible e estrutura
         run: ./scripts/validate.sh
+
+      - name: Validar configuração na imagem Hermes fixada
+        run: |
+          mkdir -p /tmp/hermes-runtime-ci
+          cp /tmp/hermes-config-ci.yaml /tmp/hermes-runtime-ci/config.yaml
+          docker run --rm \
+            -e HERMES_HOME=/opt/data \
+            -v /tmp/hermes-runtime-ci:/opt/data \
+            nousresearch/hermes-agent:v2026.8.31 doctor
 
       - name: Procurar segredos no histórico
         uses: gitleaks/gitleaks-action@v3

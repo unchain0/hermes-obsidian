@@ -1,6 +1,6 @@
 # Hermes + Obsidian em uma VPS com Ansible
 
-Projeto público para reconstruir, de forma documentada, um ambiente semelhante ao setup usado em produção: **Debian 13 + Docker/Coolify + Hermes Agent + vault Obsidian + automações + backup criptografado no Backblaze B2**.
+Projeto público para reconstruir, de forma documentada e sanitizada, o setup usado em produção: **Debian 13 + Docker/Coolify + Hermes Agent + skills + automações + vault Obsidian + backup criptografado no Backblaze B2**.
 
 > Este repositório contém infraestrutura e exemplos, não o vault pessoal nem credenciais. Ele não é afiliado à Nous Research, Obsidian, Backblaze, Coolify ou JW.org.
 
@@ -10,7 +10,9 @@ Projeto público para reconstruir, de forma documentada, um ambiente semelhante 
 - Docker Engine e Compose v2 pelo repositório oficial.
 - Coolify opcional, com instalador baixado e checksum obrigatório.
 - Hermes Agent em containers, com gateway, painel opcional e volumes persistentes.
-- Esqueleto Zettelkasten para um vault Obsidian.
+- Vault-modelo Zettelkasten completo, com dez pastas, regras, MOC, notas fictícias e configuração Obsidian mínima.
+- Manifesto das skills realmente usadas, cinco skills públicas do perfil e pontos de extensão privados.
+- Manifesto de nove padrões de automação, desabilitados até a configuração segura.
 - Voz e transcrição em português: Whisper `base` e Edge TTS masculino.
 - Backup restic criptografado para Backblaze B2 usando API compatível com S3.
 - CI para lint, syntax-check, Molecule e detecção de segredos.
@@ -44,6 +46,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements-dev.txt
 ansible-galaxy collection install -r collections/requirements.yml
+./scripts/install-gitleaks.sh
 ```
 
 ### 2. Inventário e segredos
@@ -66,6 +69,11 @@ Use um **Application Key do Backblaze limitado ao bucket**. O restic precisa lis
 ./scripts/validate.sh
 ansible-playbook -i inventories/production/hosts.yml playbooks/site.yml   --ask-become-pass --ask-vault-pass
 ```
+
+O vault-modelo fica em `examples/vault`. Por segurança, ele **não** é
+mesclado em um vault durante o deploy por padrão. Para uma instalação nova e
+vazia, defina `vault_seed_example: true`. Um destino não vazio é recusado,
+salvo opt-in explícito com `vault_allow_example_merge: true` após backup.
 
 Para não instalar nem executar o Coolify, mantenha:
 
@@ -105,6 +113,7 @@ Depois abra `http://127.0.0.1:9119`.
 - [`docs/backups.md`](docs/backups.md)
 - [`docs/obsidian.md`](docs/obsidian.md)
 - [`docs/automacoes-jw.md`](docs/automacoes-jw.md)
+- [`docs/replica-fiel.md`](docs/replica-fiel.md)
 - [`docs/recuperacao-de-desastre.md`](docs/recuperacao-de-desastre.md)
 - [`SECURITY.md`](SECURITY.md)
 

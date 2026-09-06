@@ -1,0 +1,67 @@
+---
+schema_version: 1
+timezone: America/Sao_Paulo
+# Padrões sanitizados: agendas são exemplos e todos os jobs começam desabilitados.
+automations:
+  - id: jw-ingest-hourly
+    enabled: false
+    schedule: "0 * * * *"
+    schedule_is_example: true
+    runner: script
+    script: jw_ingest.py
+    skills: [jw-org-ingest, zettelkasten-vault]
+  - id: inbox-monitor
+    enabled: false
+    schedule: "every 15m"
+    schedule_is_example: true
+    runner: agent
+    script: inbox_monitor.py
+    skills: [processamento-inbox, obsidian, ocr-and-documents]
+  - id: weekly-content-preparation
+    enabled: false
+    schedule: "0 12 * * 1"
+    schedule_is_example: true
+    runner: agent
+    script: jw_weekly_meeting_prep.py
+    skills: [jw-preparation, preparacao-reuniao-semanal]
+  - id: reading-reminder
+    enabled: false
+    schedule: "0 8 * * *"
+    schedule_is_example: true
+    runner: agent
+    script: bible_reading_tracker.py
+    skills: [rastreador-leitura-biblica, stateful-vault-reminders]
+  - id: source-watch
+    enabled: false
+    schedule: "0 9 * * 1"
+    schedule_is_example: true
+    runner: agent
+    script: source_watch.py
+    skills: [fluxo-conteudo-jw, zettelkasten-vault]
+  - id: vault-auto-maintenance
+    enabled: false
+    schedule: "0 3 * * *"
+    schedule_is_example: true
+    runner: agent
+    skills: [zettelkasten-vault, obsidian]
+  - id: external-records-sync
+    enabled: false
+    schedule: "0 12 * * 1,4"
+    schedule_is_example: true
+    runner: script
+    script: external_records_sync.py
+    skills: [scheduled-analysis-pipelines]
+  - id: daily-analysis
+    enabled: false
+    schedule: "0 7 * * *"
+    schedule_is_example: true
+    runner: script
+    script: daily_analysis.py
+    skills: [scheduled-analysis-pipelines]
+  - id: community-monitor
+    enabled: false
+    schedule: "every 6h"
+    schedule_is_example: true
+    runner: script
+    script: community_monitor.py
+    skills: [scheduled-analysis-pipelines]

@@ -1,0 +1,5 @@
+---
+hermes_profile_enabled: true
+hermes_profile_dir: "{{ hermes_root }}/home/profile"
+hermes_profile_install_skills: true
+hermes_profile_validate: true

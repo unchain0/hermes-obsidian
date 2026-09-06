@@ -1,0 +1,33 @@
+---
+schema_version: 1
+# bundled: presente na imagem fixada; profile: instalado por esta role;
+# external: capacidade opcional não redistribuída.
+skills:
+  - {name: hermes-agent, distribution: bundled, required: true}
+  - {name: obsidian, distribution: bundled, required: true}
+  - {name: zettelkasten-vault, distribution: profile, required: true}
+  - {name: audio-inbox-processing, distribution: profile, required: true}
+  - {name: jwpub-extractor, distribution: profile, required: true}
+  - {name: ocr-and-documents, distribution: profile, required: true}
+  - {name: jw-org-ingest, distribution: profile, required: true}
+  - {name: jw-preparation, distribution: profile, required: true}
+  - {name: scheduled-analysis-pipelines, distribution: profile, required: true}
+  - {name: stateful-vault-reminders, distribution: profile, required: true}
+  - {name: single-item-inbox-cron-closeout, distribution: profile, required: true}
+  - {name: readback-first-text-inbox-closeout, distribution: profile, required: true}
+  - {name: cron-single-item-integrity-closeout, distribution: profile, required: true}
+  - {name: cron-video-inbox-closeout, distribution: profile, required: true}
+  - {name: single-item-md-ingest-readback, distribution: profile, required: true}
+  - {name: perfil-vault-zettelkasten, distribution: profile, required: true}
+  - {name: fluxo-conteudo-jw, distribution: profile, required: false}
+  - {name: preparacao-reuniao-semanal, distribution: profile, required: false}
+  - {name: processamento-inbox, distribution: profile, required: true}
+  - {name: rastreador-leitura-biblica, distribution: profile, required: false}
+  - name: consideracao-de-campo
+    distribution: external
+    required: false
+    note: Instale somente de uma origem cuja licença tenha sido verificada.
+  - name: integracoes-privadas
+    distribution: external
+    required: false
+    note: Credenciais, dados privados e destinos de entrega ficam fora do Git público.

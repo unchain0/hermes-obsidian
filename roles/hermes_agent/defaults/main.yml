@@ -15,4 +15,9 @@ hermes_toolsets:
   - cronjob
   - skills
   - memory
+hermes_max_turns: 90
+hermes_max_concurrent_children: 3
+hermes_sessions_retention_days: 30
+hermes_memory_enabled: true
+hermes_user_profile_enabled: true
 hermes_secret_env: "{{ vault_hermes_env | default({}) }}"

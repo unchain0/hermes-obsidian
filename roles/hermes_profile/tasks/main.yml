@@ -1,0 +1,83 @@
+---
+- name: Carregar manifestos públicos do perfil
+  ansible.builtin.set_fact:
+    hermes_profile_skills_manifest: >-
+      {{ lookup('ansible.builtin.file', playbook_dir + '/../manifests/skills.yml') | from_yaml }}
+    hermes_profile_automations_manifest: >-
+      {{ lookup('ansible.builtin.file', playbook_dir + '/../manifests/automations.yml') | from_yaml }}
+  when: hermes_profile_enabled | bool
+
+- name: Validar invariantes públicas do perfil
+  ansible.builtin.assert:
+    that:
+      - hermes_profile_skills_manifest.schema_version == 1
+      - hermes_profile_automations_manifest.schema_version == 1
+      - hermes_profile_automations_manifest.timezone == system_timezone
+      - hermes_profile_automations_manifest.automations | selectattr('enabled', 'equalto', true) | list | length == 0
+    fail_msg: "O perfil público deve permanecer sanitizado e com automações desabilitadas."
+  when: hermes_profile_enabled | bool
+
+- name: Criar diretórios privados do perfil Hermes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0700"
+  loop:
+    - "{{ hermes_root }}/home/skills"
+    - "{{ hermes_root }}/home/skills/profile"
+    - "{{ hermes_root }}/home/scripts"
+    - "{{ hermes_root }}/home/cron"
+    - "{{ hermes_root }}/home/state"
+    - "{{ hermes_root }}/home/memories"
+    - "{{ hermes_profile_dir }}"
+    - "{{ hermes_profile_dir }}/manifests"
+  when: hermes_profile_enabled | bool
+
+- name: Instalar skills públicas específicas do perfil
+  ansible.builtin.copy:
+    src: profile-skills/
+    dest: "{{ hermes_root }}/home/skills/profile/"
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: preserve
+  when:
+    - hermes_profile_enabled | bool
+    - hermes_profile_install_skills | bool
+
+- name: Instalar manifestos sanitizados
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../manifests/{{ item }}"
+    dest: "{{ hermes_profile_dir }}/manifests/{{ item }}"
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0600"
+  loop:
+    - skills.yml
+    - automations.yml
+    - scripts.yml
+  when: hermes_profile_enabled | bool
+
+- name: Instalar verificador local do perfil
+  ansible.builtin.copy:
+    src: profile_healthcheck.py
+    dest: "{{ hermes_profile_dir }}/profile_healthcheck.py"
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0700"
+  when: hermes_profile_enabled | bool
+
+- name: Validar perfil materializado
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ hermes_profile_dir }}/profile_healthcheck.py"
+      - --hermes-home
+      - "{{ hermes_root }}/home"
+      - --vault
+      - "{{ vault_path }}"
+  changed_when: false
+  when:
+    - hermes_profile_enabled | bool
+    - hermes_profile_validate | bool

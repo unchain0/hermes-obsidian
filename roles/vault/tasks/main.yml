@@ -7,6 +7,34 @@
     group: "{{ hermes_gid }}"
     mode: "0750"
 
+- name: Verificar marcador do vault-modelo gerenciado
+  ansible.builtin.stat:
+    path: "{{ vault_path }}/.obsidian/.hermes-example-seeded"
+  register: vault_example_marker
+  when: vault_seed_example | bool
+
+- name: Inspecionar destino antes de instalar o vault-modelo
+  ansible.builtin.find:
+    paths: "{{ vault_path }}"
+    recurse: false
+    hidden: true
+    file_type: any
+  register: vault_existing_entries
+  when:
+    - vault_seed_example | bool
+    - not vault_example_marker.stat.exists
+
+- name: Bloquear merge implícito em vault existente
+  ansible.builtin.assert:
+    that:
+      - vault_existing_entries.matched == 0 or vault_allow_example_merge | bool
+    fail_msg: >-
+      O destino do vault-modelo não está vazio. Use outro vault ou defina
+      vault_allow_example_merge=true conscientemente após criar um backup.
+  when:
+    - vault_seed_example | bool
+    - not vault_example_marker.stat.exists
+
 - name: Criar estrutura Zettelkasten opcional
   ansible.builtin.file:
     path: "{{ vault_path }}/{{ item }}"
@@ -17,12 +45,28 @@
   loop: "{{ vault_directories }}"
   when: vault_initialize_skeleton | bool
 
-- name: Criar esquema inicial sem sobrescrever vault existente
-  ansible.builtin.template:
-    src: SCHEMA.md.j2
-    dest: "{{ vault_path }}/SCHEMA.md"
+- name: Instalar vault-modelo sem sobrescrever conteúdo existente
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../examples/vault/"
+    dest: "{{ vault_path }}/"
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "u=rwX,g=rX,o="
+    directory_mode: "0750"
+    force: false
+  when:
+    - vault_initialize_skeleton | bool
+    - vault_seed_example | bool
+
+- name: Marcar vault-modelo como gerenciado
+  ansible.builtin.file:
+    path: "{{ vault_path }}/.obsidian/.hermes-example-seeded"
+    state: touch
     owner: "{{ hermes_uid }}"
     group: "{{ hermes_gid }}"
     mode: "0640"
-    force: false
-  when: vault_initialize_skeleton | bool
+    modification_time: preserve
+    access_time: preserve
+  when:
+    - vault_initialize_skeleton | bool
+    - vault_seed_example | bool

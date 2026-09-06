@@ -1,0 +1,27 @@
+---
+schema_version: 1
+# Nomes externos são contratos sanitizados; o código e o estado não são publicados.
+scripts:
+  - {name: profile_healthcheck.py, distribution: profile}
+  - {name: bible_reading_tracker.py, distribution: external}
+  - {name: source_watch.py, distribution: external}
+  - {name: community_monitor.py, distribution: external}
+  - {name: daily_analysis.py, distribution: external}
+  - {name: external_records_sync.py, distribution: external}
+  - {name: extract_jwpub.py, distribution: external}
+  - {name: inbox_monitor.py, distribution: external}
+  - {name: jw_ingest.py, distribution: external}
+  - {name: jw_weekly_meeting_prep.py, distribution: external}
+  - {name: validate-wikilinks.py, distribution: external}
+tests:
+  - test_reading_tracker.py
+  - test_source_watch.py
+  - test_external_records_sync.py
+state_policy:
+  publish: false
+  excluded_patterns:
+    - "*.db"
+    - "*.json"
+    - "*.lock"
+    - "__pycache__"
+    - ".pytest_cache"

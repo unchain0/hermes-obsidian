@@ -1,0 +1,55 @@
+---
+- name: Confirmar bloqueio de merge implícito no vault
+  hosts: all
+  connection: local
+  become: false
+  gather_facts: true
+  vars:
+    hermes_root: /tmp/hermes-profile-guard-ci
+    vault_path: /tmp/hermes-profile-guard-ci/vault
+    hermes_uid: "{{ ansible_user_uid }}"
+    hermes_gid: "{{ ansible_user_gid }}"
+    vault_initialize_skeleton: true
+    vault_seed_example: true
+    vault_allow_example_merge: false
+    vault_directories: []
+  pre_tasks:
+    - name: Criar vault existente fictício
+      ansible.builtin.file:
+        path: "{{ vault_path }}"
+        state: directory
+        mode: "0750"
+
+    - name: Criar nota que não pode ser tocada
+      ansible.builtin.copy:
+        content: "conteúdo privado fictício\n"
+        dest: "{{ vault_path }}/existente.md"
+        mode: "0640"
+
+  tasks:
+    - name: Tentar semear o vault-modelo
+      block:
+        - name: Executar role vault
+          ansible.builtin.include_role:
+            name: vault
+
+        - name: Falhar se o merge inseguro foi aceito
+          ansible.builtin.fail:
+            msg: "A role aceitou merge implícito em vault existente."
+
+      rescue:
+        - name: Verificar que a nota existente foi preservada
+          ansible.builtin.stat:
+            path: "{{ vault_path }}/existente.md"
+          register: existing_note
+
+        - name: Verificar que o modelo não foi copiado
+          ansible.builtin.stat:
+            path: "{{ vault_path }}/SCHEMA.md"
+          register: model_schema
+
+        - name: Confirmar comportamento fail-closed
+          ansible.builtin.assert:
+            that:
+              - existing_note.stat.exists
+              - not model_schema.stat.exists
