@@ -1,0 +1,20 @@
+---
+hermes_root: /srv/hermes
+hermes_stack_dir: /opt/hermes-stack
+hermes_image: nousresearch/hermes-agent:v2026.8.31
+hermes_uid: 1000
+hermes_gid: 1000
+hermes_deployment_mode: direct
+hermes_dashboard_enabled: true
+hermes_dashboard_bind: 127.0.0.1
+hermes_dashboard_port: 9119
+hermes_model: openai/gpt-5-mini
+hermes_provider: openrouter
+hermes_toolsets:
+  - web
+  - terminal
+  - file
+  - cronjob
+  - skills
+  - memory
+hermes_secret_env: "{{ vault_hermes_env | default({}) }}"

@@ -1,0 +1,28 @@
+---
+- name: Criar diretório raiz do vault
+  ansible.builtin.file:
+    path: "{{ vault_path }}"
+    state: directory
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0750"
+
+- name: Criar estrutura Zettelkasten opcional
+  ansible.builtin.file:
+    path: "{{ vault_path }}/{{ item }}"
+    state: directory
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0750"
+  loop: "{{ vault_directories }}"
+  when: vault_initialize_skeleton | bool
+
+- name: Criar esquema inicial sem sobrescrever vault existente
+  ansible.builtin.template:
+    src: SCHEMA.md.j2
+    dest: "{{ vault_path }}/SCHEMA.md"
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0640"
+    force: false
+  when: vault_initialize_skeleton | bool

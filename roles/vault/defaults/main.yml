@@ -1,0 +1,16 @@
+---
+hermes_root: /srv/hermes
+vault_path: "{{ hermes_root }}/vault"
+vault_initialize_skeleton: true
+vault_directories:
+  - 00-inbox
+  - 10-fleeting-notes
+  - 20-literature-notes
+  - 30-permanent-notes
+  - 40-mocs
+  - 50-projects
+  - 60-sources
+  - 70-queries
+  - 80-templates
+  - 90-attachments
+  - 99-meta

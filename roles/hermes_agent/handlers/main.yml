@@ -1,0 +1,8 @@
+---
+- name: Reiniciar pilha Hermes
+  community.docker.docker_compose_v2:
+    project_src: "{{ hermes_stack_dir }}"
+    files:
+      - compose.yml
+    state: restarted
+  when: hermes_deployment_mode == "direct"

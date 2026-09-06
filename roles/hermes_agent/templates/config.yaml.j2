@@ -1,0 +1,33 @@
+---
+model:
+  default: "{{ hermes_model }}"
+  provider: "{{ hermes_provider }}"
+
+toolsets: {{ hermes_toolsets | to_json }}
+
+terminal:
+  backend: local
+  cwd: /workspace
+
+timezone: America/Sao_Paulo
+
+stt:
+  enabled: true
+  provider: local
+  local:
+    model: base
+    language: pt
+
+tts:
+  provider: edge
+  edge:
+    voice: pt-BR-AntonioNeural
+
+security:
+  redact_secrets: true
+
+privacy:
+  redact_pii: true
+
+checkpoints:
+  enabled: true

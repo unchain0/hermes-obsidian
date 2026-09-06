@@ -1,0 +1,69 @@
+---
+- name: Validar modo de implantação
+  ansible.builtin.assert:
+    that:
+      - hermes_deployment_mode in ["direct", "coolify"]
+      - hermes_secret_env is mapping
+      - hermes_secret_env | length > 0
+      - hermes_secret_env.values() | reject("string") | list | length == 0
+      - hermes_secret_env.values() | select("search", "[\r\n]") | list | length == 0
+    fail_msg: "Defina vault_hermes_env no arquivo criptografado e use direct ou coolify."
+  no_log: true
+
+- name: Criar diretórios persistentes do Hermes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0750"
+  loop:
+    - "{{ hermes_root }}"
+    - "{{ hermes_root }}/home"
+    - "{{ hermes_root }}/workspace"
+    - "{{ hermes_root }}/scripts"
+    - "{{ hermes_stack_dir }}"
+
+- name: Renderizar configuração pública do Hermes
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: "{{ hermes_root }}/home/config.yaml"
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0640"
+  notify: Reiniciar pilha Hermes
+
+- name: Materializar secrets de runtime
+  ansible.builtin.template:
+    src: hermes.env.j2
+    dest: "{{ hermes_stack_dir }}/hermes.env"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Reiniciar pilha Hermes
+
+- name: Renderizar Docker Compose
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ hermes_stack_dir }}/compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reiniciar pilha Hermes
+
+- name: Implantar diretamente com Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ hermes_stack_dir }}"
+    files:
+      - compose.yml
+    state: present
+    pull: missing
+  when: hermes_deployment_mode == "direct"
+
+- name: Informar próximo passo para Coolify
+  ansible.builtin.debug:
+    msg: >-
+      Compose renderizado em {{ hermes_stack_dir }}/compose.yml. Importe o Compose no Coolify;
+      não execute a implantação direta e a do Coolify ao mesmo tempo.
+  when: hermes_deployment_mode == "coolify"
