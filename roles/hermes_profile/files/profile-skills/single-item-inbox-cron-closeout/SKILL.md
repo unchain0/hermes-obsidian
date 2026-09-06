@@ -2,7 +2,7 @@
 name: single-item-inbox-cron-closeout
 description: Fechar um item de inbox por execução.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 provenance: clean-room-original
 ---

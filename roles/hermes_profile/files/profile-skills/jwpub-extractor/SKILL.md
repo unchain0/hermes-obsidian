@@ -2,7 +2,7 @@
 name: jwpub-extractor
 description: Extrair pacotes JWPUB autorizados.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 provenance: clean-room-original
 ---

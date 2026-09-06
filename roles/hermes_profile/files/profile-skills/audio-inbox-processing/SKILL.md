@@ -2,7 +2,7 @@
 name: audio-inbox-processing
 description: Processar áudio do inbox com segurança.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 provenance: clean-room-original
 ---

@@ -40,8 +40,8 @@ Internet/Telegram
 ### 1. Máquina de controle
 
 ```bash
-git clone https://github.com/unchain0/hermes-obsidian-ansible.git
-cd hermes-obsidian-ansible
+git clone https://github.com/unchain0/hermes-obsidian.git
+cd hermes-obsidian
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements-dev.txt
