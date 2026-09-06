@@ -1,0 +1,30 @@
+---
+# Valores públicos. Copie e ajuste no inventário de produção.
+system_timezone: America/Sao_Paulo
+admin_user: "{{ ansible_user }}"
+
+install_docker: true
+install_coolify: false
+hermes_deployment_mode: direct  # direct ou coolify
+
+hermes_root: /srv/hermes
+hermes_stack_dir: /opt/hermes-stack
+hermes_image: "nousresearch/hermes-agent:v2026.8.31@sha256:64923faeae267792bf9bf87fe3b4c4869e35004e360c7df01730ad801b74d524"
+hermes_uid: 1000
+hermes_gid: 1000
+hermes_dashboard_enabled: true
+hermes_dashboard_bind: 127.0.0.1
+hermes_dashboard_port: 9119
+
+vault_initialize_skeleton: true
+vault_name: meu-vault
+
+restic_enabled: true
+restic_bucket: substitua-me
+restic_bucket_prefix: hermes
+restic_b2_region: us-west-004
+restic_backup_hour: "03"
+restic_backup_minute: "17"
+restic_keep_daily: 7
+restic_keep_weekly: 5
+restic_keep_monthly: 12

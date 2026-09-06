@@ -1,0 +1,9 @@
+---
+- name: Preparar infraestrutura
+  ansible.builtin.import_playbook: bootstrap.yml
+
+- name: Implantar Hermes e vault
+  ansible.builtin.import_playbook: deploy.yml
+
+- name: Configurar backups
+  ansible.builtin.import_playbook: backup.yml

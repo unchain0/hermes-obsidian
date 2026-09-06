@@ -1,0 +1,14 @@
+---
+# Copie para group_vars/vault.yml e execute:
+# ansible-vault encrypt group_vars/vault.yml
+# O arquivo real é ignorado pelo Git.
+
+vault_hermes_env:
+  TELEGRAM_BOT_TOKEN: "SUBSTITUA"
+  TELEGRAM_ALLOWED_CHATS: "SUBSTITUA"
+  OPENROUTER_API_KEY: "SUBSTITUA"
+  HERMES_WEBUI_PASSWORD: "SUBSTITUA"
+
+vault_restic_password: "SUBSTITUA-POR-UMA-SENHA-LONGA"
+vault_b2_key_id: "SUBSTITUA"
+vault_b2_application_key: "SUBSTITUA"

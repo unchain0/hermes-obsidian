@@ -1,0 +1,53 @@
+---
+- name: Instalar dependências do repositório Docker
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Criar diretório de chaves APT
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Baixar chave oficial do Docker
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configurar repositório oficial do Docker
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ 'amd64' if ansible_facts.architecture == 'x86_64' else 'arm64' }}
+      signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/debian {{ ansible_facts.distribution_release }} {{ docker_apt_channel }}
+    filename: docker
+    state: present
+
+- name: Instalar Docker Engine e Compose
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present
+    update_cache: true
+
+- name: Habilitar Docker
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Adicionar usuários ao grupo docker
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  loop: "{{ docker_users }}"
