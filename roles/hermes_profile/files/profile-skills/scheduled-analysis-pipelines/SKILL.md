@@ -2,7 +2,7 @@
 name: scheduled-analysis-pipelines
 description: Operar análises recorrentes.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 provenance: clean-room-original
 ---

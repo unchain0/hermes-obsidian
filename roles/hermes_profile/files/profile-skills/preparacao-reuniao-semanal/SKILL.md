@@ -2,7 +2,7 @@
 name: preparacao-reuniao-semanal
 description: Preparação semanal sanitizada.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 ---
 

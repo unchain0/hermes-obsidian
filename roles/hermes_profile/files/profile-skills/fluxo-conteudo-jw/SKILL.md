@@ -2,7 +2,7 @@
 name: fluxo-conteudo-jw
 description: Fluxo público para conteúdo JW.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 ---
 

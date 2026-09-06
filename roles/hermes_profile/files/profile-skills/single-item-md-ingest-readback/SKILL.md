@@ -2,7 +2,7 @@
 name: single-item-md-ingest-readback
 description: Ingerir um Markdown com readback.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 provenance: clean-room-original
 ---

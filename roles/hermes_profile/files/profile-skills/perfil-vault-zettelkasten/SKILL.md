@@ -2,7 +2,7 @@
 name: perfil-vault-zettelkasten
 description: Perfil do vault Zettelkasten híbrido.
 version: 1.0.0
-author: Projeto hermes-obsidian-ansible
+author: Projeto hermes-obsidian
 license: MIT
 ---
 
