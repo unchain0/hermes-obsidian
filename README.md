@@ -38,7 +38,7 @@ Internet/Telegram
 ### 1. Máquina de controle
 
 ```bash
-git clone https://github.com/SEU-USUARIO/hermes-obsidian-ansible.git
+git clone https://github.com/unchain0/hermes-obsidian-ansible.git
 cd hermes-obsidian-ansible
 python3 -m venv .venv
 . .venv/bin/activate
