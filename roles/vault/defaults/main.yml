@@ -2,8 +2,11 @@
 hermes_root: /srv/hermes
 vault_path: "{{ hermes_root }}/vault"
 vault_initialize_skeleton: true
+vault_seed_example: false
+vault_allow_example_merge: false
 vault_directories:
-  - 00-inbox
+  - 00-inbox/files
+  - 00-inbox/processed
   - 10-fleeting-notes
   - 20-literature-notes
   - 30-permanent-notes
@@ -11,6 +14,5 @@ vault_directories:
   - 50-projects
   - 60-sources
   - 70-queries
-  - 80-templates
-  - 90-attachments
-  - 99-meta
+  - 80-daily
+  - 90-archive

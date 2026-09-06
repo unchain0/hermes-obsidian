@@ -15,6 +15,7 @@ group_vars/vault.yml
 *.retry
 .ansible/
 .venv/
+.tools/
 __pycache__/
 .pytest_cache/
 .molecule/

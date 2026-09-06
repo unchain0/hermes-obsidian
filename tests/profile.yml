@@ -1,0 +1,29 @@
+---
+- name: Materializar perfil completo em diretório temporário
+  hosts: all
+  connection: local
+  become: false
+  gather_facts: true
+  vars:
+    system_timezone: America/Sao_Paulo
+    hermes_root: /tmp/hermes-profile-ci
+    vault_path: /tmp/hermes-profile-ci/vault
+    hermes_uid: "{{ ansible_user_uid }}"
+    hermes_gid: "{{ ansible_user_gid }}"
+    vault_initialize_skeleton: true
+    vault_seed_example: true
+    vault_directories:
+      - 00-inbox/files
+      - 00-inbox/processed
+      - 10-fleeting-notes
+      - 20-literature-notes
+      - 30-permanent-notes
+      - 40-mocs
+      - 50-projects
+      - 60-sources
+      - 70-queries
+      - 80-daily
+      - 90-archive
+  roles:
+    - role: vault
+    - role: hermes_profile

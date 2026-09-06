@@ -22,7 +22,6 @@
     - "{{ hermes_root }}"
     - "{{ hermes_root }}/home"
     - "{{ hermes_root }}/workspace"
-    - "{{ hermes_root }}/scripts"
     - "{{ hermes_stack_dir }}"
 
 - name: Renderizar configuração pública do Hermes

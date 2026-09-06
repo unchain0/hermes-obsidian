@@ -5,9 +5,18 @@ model:
 
 toolsets: {{ hermes_toolsets | to_json }}
 
+agent:
+  max_turns: {{ hermes_max_turns | default(90) }}
+  tool_use_enforcement: true
+
 terminal:
   backend: local
   cwd: /workspace
+  persistent_shell: true
+
+browser:
+  allow_private_urls: false
+  auto_local_for_private_urls: false
 
 timezone: America/Sao_Paulo
 
@@ -25,9 +34,63 @@ tts:
 
 security:
   redact_secrets: true
+  tirith_enabled: true
+  tirith_fail_open: false
+  allow_lazy_installs: false
+  allow_private_urls: false
 
 privacy:
   redact_pii: true
 
 checkpoints:
   enabled: true
+  auto_prune: true
+  max_snapshots: 50
+
+memory:
+  memory_enabled: {{ hermes_memory_enabled | default(true) | bool | lower }}
+  user_profile_enabled: {{ hermes_user_profile_enabled | default(true) | bool | lower }}
+
+delegation:
+  max_concurrent_children: {{ hermes_max_concurrent_children | default(3) }}
+  max_spawn_depth: 1
+  subagent_auto_approve: false
+
+skills:
+  guard_agent_created: true
+  external_dirs:
+    - /opt/data/skills/profile
+
+curator:
+  enabled: true
+  interval_hours: 24
+
+approvals:
+  mode: manual
+  cron_mode: deny
+  destructive_slash_confirm: true
+
+cron:
+  max_parallel_jobs: 3
+  wrap_response: true
+
+gateway:
+  strict: true
+  trust_recent_files: false
+
+sessions:
+  auto_prune: true
+  retention_days: {{ hermes_sessions_retention_days | default(30) }}
+  write_json_snapshots: false
+
+code_execution:
+  mode: strict
+  timeout: 300
+
+lsp:
+  enabled: true
+  install_strategy: local
+
+platform_toolsets:
+  cli: [hermes-cli]
+  telegram: [hermes-telegram]

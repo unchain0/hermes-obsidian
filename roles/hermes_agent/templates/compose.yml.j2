@@ -18,7 +18,6 @@ services:
       - "{{ hermes_root }}/home:/opt/data"
       - "{{ hermes_root }}/vault:/vault"
       - "{{ hermes_root }}/workspace:/workspace"
-      - "{{ hermes_root }}/scripts:/opt/data/scripts"
     healthcheck:
       test: ["CMD", "hermes", "status"]
       interval: 60s
