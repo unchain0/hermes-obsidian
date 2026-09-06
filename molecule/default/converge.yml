@@ -1,0 +1,9 @@
+---
+- name: Testar role common
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    system_timezone: America/Sao_Paulo
+  roles:
+    - role: common

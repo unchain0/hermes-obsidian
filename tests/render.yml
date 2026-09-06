@@ -1,0 +1,68 @@
+---
+- name: Renderizar templates críticos sem alterar o host
+  hosts: all
+  become: false
+  gather_facts: false
+  vars:
+    hermes_root: /tmp/hermes-ci
+    hermes_stack_dir: /tmp/hermes-stack-ci
+    hermes_image: nousresearch/hermes-agent:v2026.8.31
+    hermes_uid: 1000
+    hermes_gid: 1000
+    hermes_deployment_mode: direct
+    hermes_dashboard_enabled: true
+    hermes_model: openai/gpt-5-mini
+    hermes_provider: openrouter
+    hermes_toolsets: [web, terminal, file]
+    hermes_secret_env:
+      CI_DUMMY_TOKEN: not-a-real-secret
+    restic_b2_region: us-west-004
+    restic_bucket: ci-placeholder
+    restic_bucket_prefix: hermes
+    vault_restic_password: this-is-only-a-ci-placeholder
+    vault_b2_key_id: ci-placeholder
+    vault_b2_application_key: ci-placeholder-value
+    restic_backup_paths: [/tmp/hermes-ci]
+    restic_excludes: ["**/.cache/**"]
+    restic_keep_daily: 7
+    restic_keep_weekly: 5
+    restic_keep_monthly: 12
+  tasks:
+    - name: Renderizar Compose
+      ansible.builtin.template:
+        src: ../roles/hermes_agent/templates/compose.yml.j2
+        dest: /tmp/hermes-compose-ci.yml
+        mode: "0600"
+
+    - name: Renderizar Compose para Coolify
+      ansible.builtin.template:
+        src: ../roles/hermes_agent/templates/compose.yml.j2
+        dest: /tmp/hermes-compose-coolify-ci.yml
+        mode: "0600"
+      vars:
+        hermes_deployment_mode: coolify
+        hermes_dashboard_enabled: true
+
+    - name: Renderizar config Hermes
+      ansible.builtin.template:
+        src: ../roles/hermes_agent/templates/config.yaml.j2
+        dest: /tmp/hermes-config-ci.yml
+        mode: "0600"
+
+    - name: Renderizar script restic
+      ansible.builtin.template:
+        src: ../roles/restic_b2/templates/backup.sh.j2
+        dest: /tmp/hermes-backup-ci.sh
+        mode: "0700"
+
+    - name: Renderizar ambiente restic
+      ansible.builtin.template:
+        src: ../roles/restic_b2/templates/b2.env.j2
+        dest: /tmp/hermes-restic-env-ci
+        mode: "0600"
+
+    - name: Renderizar unit restic
+      ansible.builtin.template:
+        src: ../roles/restic_b2/templates/hermes-restic-backup.service.j2
+        dest: /tmp/hermes-restic-service-ci
+        mode: "0644"

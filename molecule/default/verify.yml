@@ -1,0 +1,16 @@
+---
+- name: Verificar role common
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Ler timezone configurado
+      ansible.builtin.slurp:
+        src: /etc/timezone
+      register: timezone_file
+
+    - name: Confirmar timezone e pacotes
+      ansible.builtin.assert:
+        that:
+          - timezone_file.content | b64decode | trim == "America/Sao_Paulo"
+          - ansible_facts.distribution == "Debian"
+          - ansible_facts.distribution_major_version == "13"

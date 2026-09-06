@@ -3,4 +3,7 @@ profile: production
 exclude_paths:
   - .venv/
   - molecule/
+skip_list:
+  # Variáveis como hermes_root são uma API compartilhada entre roles.
+  - var-naming[no-role-prefix]
 mock_roles: []

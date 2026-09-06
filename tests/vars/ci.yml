@@ -1,0 +1,13 @@
+---
+install_docker: false
+install_coolify: false
+hermes_deployment_mode: coolify
+restic_enabled: false
+hermes_secret_env:
+  CI_DUMMY_TOKEN: not-a-real-secret
+vault_hermes_env:
+  CI_DUMMY_TOKEN: not-a-real-secret
+vault_restic_password: this-is-only-a-ci-placeholder
+vault_b2_key_id: ci-placeholder
+vault_b2_application_key: ci-placeholder-value
+restic_bucket: ci-placeholder
