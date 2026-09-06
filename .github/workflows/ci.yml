@@ -41,7 +41,7 @@ jobs:
       - name: Validar configuração na imagem Hermes fixada
         run: |
           mkdir -p /tmp/hermes-runtime-ci
-          cp /tmp/hermes-config-ci.yaml /tmp/hermes-runtime-ci/config.yaml
+          cp /tmp/hermes-config-ci.yml /tmp/hermes-runtime-ci/config.yaml
           docker run --rm \
             -e HERMES_HOME=/opt/data \
             -v /tmp/hermes-runtime-ci:/opt/data \
