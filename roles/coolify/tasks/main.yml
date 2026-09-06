@@ -1,0 +1,25 @@
+---
+- name: Exigir checksum do instalador Coolify
+  ansible.builtin.assert:
+    that:
+      - coolify_installer_sha256 is match("^[a-f0-9]{64}$")
+    fail_msg: >-
+      Calcule e revise o SHA-256 de {{ coolify_installer_url }} e defina
+      coolify_installer_sha256. O projeto não executa curl|bash sem verificação.
+  when: coolify_install_enabled | bool
+
+- name: Baixar instalador Coolify verificado
+  ansible.builtin.get_url:
+    url: "{{ coolify_installer_url }}"
+    dest: /root/coolify-install.sh
+    owner: root
+    group: root
+    mode: "0700"
+    checksum: "sha256:{{ coolify_installer_sha256 }}"
+  when: coolify_install_enabled | bool
+
+- name: Instalar Coolify uma única vez
+  ansible.builtin.command:
+    cmd: /root/coolify-install.sh
+    creates: "{{ coolify_install_marker }}"
+  when: coolify_install_enabled | bool

@@ -1,0 +1,8 @@
+---
+- name: Configurar backup criptografado no Backblaze B2
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - role: restic_b2
+      when: restic_enabled | bool

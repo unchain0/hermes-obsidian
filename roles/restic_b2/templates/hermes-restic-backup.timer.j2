@@ -1,0 +1,11 @@
+[Unit]
+Description=Agenda do backup Hermes/Obsidian
+
+[Timer]
+OnCalendar=*-*-* {{ restic_backup_hour }}:{{ restic_backup_minute }}:00 America/Sao_Paulo
+Persistent=true
+RandomizedDelaySec=15m
+Unit=hermes-restic-backup.service
+
+[Install]
+WantedBy=timers.target

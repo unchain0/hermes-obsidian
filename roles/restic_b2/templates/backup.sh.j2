@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+exec 9>/run/lock/hermes-restic-backup.lock
+flock -n 9 || { echo "backup já está em execução" >&2; exit 75; }
+set -a
+# shellcheck disable=SC1091
+source /etc/restic/b2.env
+set +a
+
+restic backup \
+{% for path in restic_backup_paths %}
+  {{ path | quote }} \
+{% endfor %}
+{% for pattern in restic_excludes %}
+  --exclude {{ pattern | quote }} \
+{% endfor %}
+  --tag hermes-automatico
+
+restic forget --prune \
+  --keep-daily {{ restic_keep_daily }} \
+  --keep-weekly {{ restic_keep_weekly }} \
+  --keep-monthly {{ restic_keep_monthly }}
+restic check --read-data-subset=5%

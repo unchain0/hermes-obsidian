@@ -1,0 +1,106 @@
+---
+- name: Validar configuração do Backblaze B2
+  ansible.builtin.assert:
+    that:
+      - restic_bucket | length > 2
+      - restic_bucket != "substitua-me"
+      - vault_restic_password | default("") | length >= 16
+      - vault_b2_key_id | default("") | length > 2
+      - vault_b2_application_key | default("") | length > 8
+    fail_msg: "Preencha e criptografe as credenciais restic/B2 em group_vars/vault.yml."
+  no_log: true
+  when: restic_enabled | bool
+
+- name: Instalar restic
+  ansible.builtin.apt:
+    name:
+      - restic
+      - util-linux
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: restic_enabled | bool
+
+- name: Criar diretórios restic
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  loop:
+    - /etc/restic
+    - /var/cache/restic
+  when: restic_enabled | bool
+
+- name: Materializar ambiente criptográfico do restic
+  ansible.builtin.template:
+    src: b2.env.j2
+    dest: /etc/restic/b2.env
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  when: restic_enabled | bool
+
+- name: Verificar repositório restic
+  ansible.builtin.command:
+    cmd: restic snapshots --json
+  environment:
+    RESTIC_REPOSITORY: "s3:https://s3.{{ restic_b2_region }}.backblazeb2.com/{{ restic_bucket }}/{{ restic_bucket_prefix }}"
+    RESTIC_PASSWORD: "{{ vault_restic_password }}"
+    AWS_ACCESS_KEY_ID: "{{ vault_b2_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ vault_b2_application_key }}"
+  register: restic_repository_check
+  changed_when: false
+  failed_when: false
+  no_log: true
+  when:
+    - restic_enabled | bool
+    - restic_initialize_repository | bool
+
+- name: Inicializar repositório restic
+  ansible.builtin.command:
+    cmd: restic init
+  environment:
+    RESTIC_REPOSITORY: "s3:https://s3.{{ restic_b2_region }}.backblazeb2.com/{{ restic_bucket }}/{{ restic_bucket_prefix }}"
+    RESTIC_PASSWORD: "{{ vault_restic_password }}"
+    AWS_ACCESS_KEY_ID: "{{ vault_b2_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ vault_b2_application_key }}"
+  no_log: true
+  when:
+    - restic_enabled | bool
+    - restic_initialize_repository | bool
+    - restic_repository_check.rc != 0
+
+- name: Instalar script de backup
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: /usr/local/sbin/hermes-restic-backup
+    owner: root
+    group: root
+    mode: "0700"
+  when: restic_enabled | bool
+
+- name: Instalar serviço e timer de backup
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - src: hermes-restic-backup.service.j2
+      dest: /etc/systemd/system/hermes-restic-backup.service
+    - src: hermes-restic-backup.timer.j2
+      dest: /etc/systemd/system/hermes-restic-backup.timer
+  notify: Recarregar systemd
+  when: restic_enabled | bool
+
+- name: Habilitar timer de backup
+  ansible.builtin.systemd_service:
+    name: hermes-restic-backup.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: restic_enabled | bool
