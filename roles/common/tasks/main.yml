@@ -2,8 +2,8 @@
 - name: Validar sistema operacional suportado
   ansible.builtin.assert:
     that:
-      - ansible_facts.os_family == "Debian"
-      - ansible_facts.distribution_major_version | int >= 12
+      - ansible_facts.distribution == "Debian"
+      - ansible_facts.distribution_major_version in ["12", "13"]
     fail_msg: "Este projeto suporta Debian 12 ou 13."
 
 - name: Instalar pacotes básicos

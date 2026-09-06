@@ -4,7 +4,8 @@
     that:
       - hermes_deployment_mode in ["direct", "coolify"]
       - hermes_secret_env is mapping
-      - hermes_secret_env | length > 0
+      - hermes_deployment_mode == "coolify" or hermes_secret_env | length > 0
+      - hermes_secret_env.keys() | reject("match", "^[A-Z_][A-Z0-9_]*$") | list | length == 0
       - hermes_secret_env.values() | reject("string") | list | length == 0
       - hermes_secret_env.values() | select("search", "[\r\n]") | list | length == 0
     fail_msg: "Defina vault_hermes_env no arquivo criptografado e use direct ou coolify."
@@ -33,6 +34,42 @@
     mode: "0640"
   notify: Reiniciar pilha Hermes
 
+- name: Verificar marcador da implantação direta anterior
+  ansible.builtin.stat:
+    path: "{{ hermes_stack_dir }}/.ansible-direct-deployment"
+  register: hermes_agent_direct_marker
+
+- name: Verificar arquivo de ambiente direto anterior
+  ansible.builtin.stat:
+    path: "{{ hermes_stack_dir }}/hermes.env"
+  register: hermes_agent_direct_env
+
+- name: Verificar Compose anterior
+  ansible.builtin.stat:
+    path: "{{ hermes_stack_dir }}/compose.yml"
+  register: hermes_agent_old_compose
+
+- name: Encerrar pilha direta antes de migrar para Coolify
+  community.docker.docker_compose_v2:
+    project_src: "{{ hermes_stack_dir }}"
+    files:
+      - compose.yml
+    state: absent
+    remove_orphans: true
+  when:
+    - hermes_deployment_mode == "coolify"
+    - hermes_agent_old_compose.stat.exists
+    - hermes_agent_direct_marker.stat.exists or hermes_agent_direct_env.stat.exists
+
+- name: Remover artefatos exclusivos do modo direto
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ hermes_stack_dir }}/hermes.env"
+    - "{{ hermes_stack_dir }}/.ansible-direct-deployment"
+  when: hermes_deployment_mode == "coolify"
+
 - name: Materializar secrets de runtime
   ansible.builtin.template:
     src: hermes.env.j2
@@ -41,6 +78,7 @@
     group: root
     mode: "0600"
   no_log: true
+  when: hermes_deployment_mode == "direct"
   notify: Reiniciar pilha Hermes
 
 - name: Renderizar Docker Compose
@@ -59,11 +97,23 @@
       - compose.yml
     state: present
     pull: missing
+    remove_orphans: true
+  when: hermes_deployment_mode == "direct"
+
+- name: Marcar pilha gerenciada diretamente pelo Ansible
+  ansible.builtin.file:
+    path: "{{ hermes_stack_dir }}/.ansible-direct-deployment"
+    state: touch
+    owner: root
+    group: root
+    mode: "0600"
+    modification_time: preserve
+    access_time: preserve
   when: hermes_deployment_mode == "direct"
 
 - name: Informar próximo passo para Coolify
   ansible.builtin.debug:
     msg: >-
-      Compose renderizado em {{ hermes_stack_dir }}/compose.yml. Importe o Compose no Coolify;
+      Compose renderizado em {{ hermes_stack_dir }}/compose.yml. Cadastre os segredos no Coolify;
       não execute a implantação direta e a do Coolify ao mesmo tempo.
   when: hermes_deployment_mode == "coolify"

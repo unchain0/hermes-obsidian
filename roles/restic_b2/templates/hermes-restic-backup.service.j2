@@ -5,6 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+EnvironmentFile=/etc/restic/b2.env
 ExecStart=/usr/local/sbin/hermes-restic-backup
 Nice=10
 IOSchedulingClass=best-effort

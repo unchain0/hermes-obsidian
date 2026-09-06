@@ -3,8 +3,16 @@ services:
   gateway:
     image: "{{ hermes_image }}"
     restart: unless-stopped
+    network_mode: host
+{% if hermes_deployment_mode == "direct" %}
     env_file:
       - hermes.env
+{% endif %}
+    environment:
+      HERMES_HOME: /opt/data
+      OBSIDIAN_VAULT_PATH: /vault
+      HERMES_UID: "{{ hermes_uid }}"
+      HERMES_GID: "{{ hermes_gid }}"
     command: ["gateway", "run"]
     volumes:
       - "{{ hermes_root }}/home:/opt/data"
@@ -18,18 +26,21 @@ services:
       retries: 3
       start_period: 60s
 
-{% if hermes_dashboard_enabled %}
+{% if hermes_dashboard_enabled and hermes_deployment_mode == "direct" %}
   dashboard:
     image: "{{ hermes_image }}"
     restart: unless-stopped
+    network_mode: host
     env_file:
       - hermes.env
-    command: ["dashboard", "--host", "0.0.0.0", "--no-open"]
+    environment:
+      HERMES_HOME: /opt/data
+      HERMES_UID: "{{ hermes_uid }}"
+      HERMES_GID: "{{ hermes_gid }}"
+    command: ["dashboard", "--host", "127.0.0.1", "--no-open"]
     depends_on:
       gateway:
         condition: service_started
-    ports:
-      - "{{ hermes_dashboard_bind }}:{{ hermes_dashboard_port }}:9119"
     volumes:
       - "{{ hermes_root }}/home:/opt/data"
       - "{{ hermes_root }}/vault:/vault"

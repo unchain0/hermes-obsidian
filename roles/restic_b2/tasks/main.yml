@@ -4,10 +4,13 @@
     that:
       - restic_bucket | length > 2
       - restic_bucket != "substitua-me"
+      - restic_b2_region is match("^[a-z0-9-]+$")
+      - restic_bucket is match("^[a-z0-9][a-z0-9.-]+[a-z0-9]$")
+      - restic_bucket_prefix is match("^[A-Za-z0-9._/-]+$")
       - vault_restic_password | default("") | length >= 16
       - vault_b2_key_id | default("") | length > 2
       - vault_b2_application_key | default("") | length > 8
-    fail_msg: "Preencha e criptografe as credenciais restic/B2 em group_vars/vault.yml."
+    fail_msg: "Preencha e criptografe as credenciais restic/B2 no Ansible Vault."
   no_log: true
   when: restic_enabled | bool
 
@@ -51,15 +54,23 @@
     RESTIC_PASSWORD: "{{ vault_restic_password }}"
     AWS_ACCESS_KEY_ID: "{{ vault_b2_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ vault_b2_application_key }}"
-  register: restic_repository_check
+  register: restic_b2_repository_check
   changed_when: false
   failed_when: false
   no_log: true
-  when:
-    - restic_enabled | bool
-    - restic_initialize_repository | bool
+  when: restic_enabled | bool
 
-- name: Inicializar repositório restic
+- name: Falhar fechado quando o repositório não está acessível
+  ansible.builtin.assert:
+    that:
+      - restic_b2_repository_check.rc == 0 or restic_initialize_repository | bool
+    fail_msg: >-
+      O repositório não pôde ser aberto. Corrija rede, endpoint, credenciais ou senha.
+      Se ele realmente ainda não existe, execute uma vez com restic_initialize_repository=true.
+  no_log: true
+  when: restic_enabled | bool
+
+- name: Inicializar repositório restic por solicitação explícita
   ansible.builtin.command:
     cmd: restic init
   environment:
@@ -68,10 +79,11 @@
     AWS_ACCESS_KEY_ID: "{{ vault_b2_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ vault_b2_application_key }}"
   no_log: true
+  changed_when: true
   when:
     - restic_enabled | bool
     - restic_initialize_repository | bool
-    - restic_repository_check.rc != 0
+    - restic_b2_repository_check.rc != 0
 
 - name: Instalar script de backup
   ansible.builtin.template:
@@ -104,3 +116,30 @@
     enabled: true
     daemon_reload: true
   when: restic_enabled | bool
+
+- name: Verificar timer antigo quando backup está desabilitado
+  ansible.builtin.stat:
+    path: /etc/systemd/system/hermes-restic-backup.timer
+  register: restic_b2_old_timer
+  when: not restic_enabled | bool
+
+- name: Parar e desabilitar timer antigo
+  ansible.builtin.systemd_service:
+    name: hermes-restic-backup.timer
+    state: stopped
+    enabled: false
+  when:
+    - not restic_enabled | bool
+    - restic_b2_old_timer.stat.exists
+
+- name: Remover artefatos de backup desabilitado
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/restic/b2.env
+    - /usr/local/sbin/hermes-restic-backup
+    - /etc/systemd/system/hermes-restic-backup.service
+    - /etc/systemd/system/hermes-restic-backup.timer
+  notify: Recarregar systemd
+  when: not restic_enabled | bool

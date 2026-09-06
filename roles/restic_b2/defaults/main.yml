@@ -1,6 +1,6 @@
 ---
 restic_enabled: true
-restic_initialize_repository: true
+restic_initialize_repository: false
 restic_bucket: ""
 restic_bucket_prefix: hermes
 restic_b2_region: us-west-004
